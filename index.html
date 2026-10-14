@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meu Primeiro Backend - Cadastro</title>
+  <style>
+    * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
+    body {
+      background: linear-gradient(135deg, #1e1e2f, #2d2b55);
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      padding: 40px;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    }
+    h2 { text-align: center; margin-bottom: 8px; font-size: 24px; color: #4de8b2; }
+    p.subtitle { text-align: center; color: #aaa; margin-bottom: 24px; font-size: 14px; }
+    form { display: flex; flex-direction: column; gap: 16px; }
+    label { font-size: 14px; color: #ddd; }
+    input {
+      padding: 12px 16px;
+      border-radius: 8px;
+      border: 1px solid #444;
+      background: #181726;
+      color: #fff;
+      font-size: 15px;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+    input:focus { border-color: #4de8b2; }
+    button {
+      padding: 14px;
+      border-radius: 8px;
+      border: none;
+      background: linear-gradient(90deg, #00c6ff, #0072ff);
+      color: #fff;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: transform 0.2s, opacity 0.2s;
+    }
+    button:hover { opacity: 0.9; transform: translateY(-2px); }
+    .error-msg { color: #ff5555; text-align: center; margin-top: 10px; font-size: 14px; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h2>🚀 Meu Primeiro Backend</h2>
+    <p class="subtitle">Cadastre-se para testar a gravação no Supabase</p>
+
+    <form id="formCadastro">
+      <div>
+        <label>Seu Nome</label>
+        <input type="text" id="nome" placeholder="Ex: Luiz Fellipe" required />
+      </div>
+      <div>
+        <label>Seu E-mail</label>
+        <input type="email" id="email" placeholder="Ex: luiz@email.com" required />
+      </div>
+      <button type="submit" id="btnSubmit">Finalizar Cadastro ✨</button>
+    </form>
+    <div id="erro" class="error-msg"></div>
+  </div>
+
+  <script>
+    document.getElementById('formCadastro').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('btnSubmit');
+      const divErro = document.getElementById('erro');
+      divErro.innerText = '';
+      btn.innerText = 'Enviando para o Supabase... ⏳';
+      btn.disabled = true;
+
+      const nome = document.getElementById('nome').value;
+      const email = document.getElementById('email').value;
+
+      try {
+        const resposta = await fetch('/clientes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nome, email })
+        });
+
+        const dados = await resposta.json();
+
+        if (resposta.ok) {
+          // Passa os dados recebidos do Supabase via URL para a página de sucesso
+          const params = new URLSearchParams({
+            id: dados.id,
+            nome: dados.nome,
+            email: dados.email
+          });
+          window.location.href = `/sucesso?${params.toString()}`;
+        } else {
+          divErro.innerText = `❌ Erro: ${dados.erro}`;
+          btn.innerText = 'Finalizar Cadastro ✨';
+          btn.disabled = false;
+        }
+      } catch (err) {
+        divErro.innerText = '❌ Erro ao conectar com o servidor.';
+        btn.innerText = 'Finalizar Cadastro ✨';
+        btn.disabled = false;
+      }
+    });
+  </script>
+
+</body>
+</html>

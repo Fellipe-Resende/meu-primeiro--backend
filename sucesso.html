@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastro Concluído! 🎉</title>
+  <style>
+    * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
+    body {
+      background: linear-gradient(135deg, #1e1e2f, #1a3a2a);
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      padding: 40px;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 480px;
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+      text-align: center;
+    }
+    .badge {
+      font-size: 60px;
+      margin-bottom: 10px;
+      animation: pop 0.5s ease-out;
+    }
+    @keyframes pop {
+      0% { transform: scale(0); }
+      80% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+    h2 { color: #4de8b2; margin-bottom: 10px; font-size: 26px; }
+    p { color: #ccc; margin-bottom: 20px; font-size: 15px; }
+    .info-box {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 20px;
+      border-radius: 12px;
+      border-left: 4px solid #4de8b2;
+      text-align: left;
+      margin-bottom: 25px;
+    }
+    .info-box div { margin-bottom: 8px; font-size: 15px; }
+    .info-box div:last-child { margin-bottom: 0; }
+    .info-box strong { color: #4de8b2; }
+    .actions { display: flex; flex-direction: column; gap: 12px; }
+    button, a.btn {
+      display: block;
+      padding: 12px;
+      border-radius: 8px;
+      border: none;
+      text-decoration: none;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .btn-primary { background: #4de8b2; color: #1e1e2f; }
+    .btn-secondary { background: rgba(255, 255, 255, 0.15); color: #fff; }
+    .btn-primary:hover { background: #3bd19e; }
+    .btn-secondary:hover { background: rgba(255, 255, 255, 0.25); }
+
+    /* Container de Registros no Supabase */
+    #listaContainer {
+      display: none;
+      margin-top: 25px;
+      text-align: left;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 20px;
+      border-radius: 12px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    #listaContainer h4 { color: #00c6ff; margin-top: 0; margin-bottom: 10px; }
+    ul { list-style: none; padding: 0; margin: 0; }
+    li {
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 14px;
+    }
+    li:last-child { border-bottom: none; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <div class="badge">🎉</div>
+    <h2>Cadastro Concluído!</h2>
+    <p>Os seus dados foram salvos com sucesso no PostgreSQL (Supabase)!</p>
+
+    <div class="info-box">
+      <div><strong>ID no Banco:</strong> <span id="resId">--</span></div>
+      <div><strong>Nome:</strong> <span id="resNome">--</span></div>
+      <div><strong>E-mail:</strong> <span id="resEmail">--</span></div>
+      <div><strong>Status:</strong> <span style="color: #4de8b2;">🟢 Gravado na Nuvem</span></div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-primary" onclick="toggleLista()">🔍 Ver Todos no Banco de Dados</button>
+      <a href="/" class="btn btn-secondary">➕ Cadastrar Outra Pessoa</a>
+    </div>
+
+    <div id="listaContainer">
+      <h4>👥 Registros Reais no Supabase:</h4>
+      <ul id="listaClientes">
+        <li>Carregando...</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    // Recupera os parâmetros enviados na URL
+    const urlParams = new URLSearchParams(window.location.search);
+    document.getElementById('resId').innerText = urlParams.get('id') || '1';
+    document.getElementById('resNome').innerText = urlParams.get('nome') || 'Cliente Teste';
+    document.getElementById('resEmail').innerText = urlParams.get('email') || 'teste@email.com';
+
+
+    async function toggleLista() {
+      const container = document.getElementById('listaContainer');
+      if (container.style.display === 'block') {
+        container.style.display = 'none';
+        return;
+      }
+
+      container.style.display = 'block';
+      const ul = document.getElementById('listaClientes');
+      ul.innerHTML = '<li>Buscando no Supabase... ⏳</li>';
+
+      try {
+        const res = await fetch('/clientes');
+        const dados = await res.json();
+        ul.innerHTML = '';
+
+        dados.forEach(c => {
+          const li = document.createElement('li');
+          li.innerHTML = `<strong>#${c.id}</strong> - ${c.nome} <em>(${c.email})</em>`;
+          ul.appendChild(li);
+        });
+      } catch (err) {
+        ul.innerHTML = '<li style="color: red;">Erro ao carregar do banco.</li>';
+      }
+    }
+  </script>
+
+</body>
+</html>
